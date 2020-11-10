@@ -8,6 +8,11 @@ import {
 } from 'react-beautiful-dnd';
 import initialData from './initial-data';
 import Column from './Column';
+import styled from 'styled-components';
+
+const Container = styled.div`
+  display: flex;
+`;
 
 const App = () => {
   const [data, setData] = useState(initialData);
@@ -45,14 +50,38 @@ const App = () => {
     }
 
     const srcColumnId = source.droppableId;
+    const destColumnId = destination.droppableId;
+
+    if (srcColumnId === destColumnId) {
+      const srcColumn = data.columns[srcColumnId];
+      const newTaskIds = [...srcColumn.taskIds];
+
+      const pulledTaskId = newTaskIds.splice(source.index, 1)[0];
+      newTaskIds.splice(destination.index, 0, pulledTaskId);
+
+      setData((prevData) => {
+        const updatedData = { ...prevData };
+        data.columns[srcColumnId].taskIds = newTaskIds;
+
+        return updatedData;
+      });
+
+      return;
+    }
+
     const srcColumn = data.columns[srcColumnId];
-    const copiedTaskIds = [...srcColumn.taskIds];
-    const pulledTaskId = copiedTaskIds.splice(source.index, 1)[0];
-    copiedTaskIds.splice(destination.index, 0, pulledTaskId);
+    const destColumn = data.columns[destColumnId];
+
+    const newSrcTaskIds = [...srcColumn.taskIds];
+    const newDestTaskIds = [...destColumn.taskIds];
+
+    const pulledTaskId = newSrcTaskIds.splice(source.index, 1)[0];
+    newDestTaskIds.splice(destination.index, 0, pulledTaskId);
 
     setData((prevData) => {
       const updatedData = { ...prevData };
-      data.columns[srcColumnId].taskIds = copiedTaskIds;
+      data.columns[srcColumnId].taskIds = newSrcTaskIds;
+      data.columns[destColumnId].taskIds = newDestTaskIds;
 
       return updatedData;
     });
@@ -64,12 +93,14 @@ const App = () => {
       onDragUpdate={onDragUpdate}
       onDragEnd={onDragEnd}
     >
-      {data.columnOrder.map((columnId) => {
-        const column = data.columns[columnId];
-        const tasks = column.taskIds.map((taskId) => data.tasks[taskId]);
+      <Container>
+        {data.columnOrder.map((columnId) => {
+          const column = data.columns[columnId];
+          const tasks = column.taskIds.map((taskId) => data.tasks[taskId]);
 
-        return <Column key={columnId} column={column} tasks={tasks} />;
-      })}
+          return <Column key={columnId} column={column} tasks={tasks} />;
+        })}
+      </Container>
     </DragDropContext>
   );
 };
