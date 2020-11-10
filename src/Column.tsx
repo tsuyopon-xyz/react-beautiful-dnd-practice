@@ -5,6 +5,9 @@ import {
   Droppable,
   DroppableProvided,
   DroppableStateSnapshot,
+  Draggable,
+  DraggableProvided,
+  DraggableStateSnapshot,
 } from 'react-beautiful-dnd';
 import styled from 'styled-components';
 
@@ -16,6 +19,9 @@ const Container = styled.div`
 
   display: flex;
   flex-direction: column;
+
+  background-color: ${(props: any) =>
+    props.isDraggingColumn ? 'lightgreen' : 'white'};
 `;
 const Title = styled.div`
   padding: 8px;
@@ -33,35 +39,53 @@ interface IProps {
   column: ColumnType;
   tasks: TaskType[];
   isDropDisabled: boolean;
+  index: number;
 }
 
-export default function Column({ column, tasks, isDropDisabled }: IProps) {
+export default function Column({
+  column,
+  tasks,
+  isDropDisabled,
+  index,
+}: IProps) {
   return (
-    <Container>
-      <Title>{column.title}</Title>
-      <Droppable
-        droppableId={column.id}
-        // type={column.id === 'column-3' ? 'done' : 'active'}
-        isDropDisabled={isDropDisabled}
-      >
-        {(provided: DroppableProvided, snapShot: DroppableStateSnapshot) => {
-          const { isDraggingOver } = snapShot;
+    <Draggable draggableId={column.id} index={index}>
+      {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => {
+        const isDraggingColumn = snapshot.isDragging;
 
-          return (
-            <TaskList
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              //@ts-ignore
-              isDraggingOver={isDraggingOver}
-            >
-              {tasks.map((task, index) => (
-                <Task key={task.id} task={task} index={index} />
-              ))}
-              {provided.placeholder}
-            </TaskList>
-          );
-        }}
-      </Droppable>
-    </Container>
+        return (
+          <Container
+            ref={provided.innerRef}
+            {...provided.draggableProps}
+            //@ts-ignore
+            isDraggingColumn={isDraggingColumn}
+          >
+            <Title {...provided.dragHandleProps}>{column.title}</Title>
+            <Droppable droppableId={column.id} type="task">
+              {(
+                provided: DroppableProvided,
+                snapShot: DroppableStateSnapshot
+              ) => {
+                const { isDraggingOver } = snapShot;
+
+                return (
+                  <TaskList
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    //@ts-ignore
+                    isDraggingOver={isDraggingOver}
+                  >
+                    {tasks.map((task, index) => (
+                      <Task key={task.id} task={task} index={index} />
+                    ))}
+                    {provided.placeholder}
+                  </TaskList>
+                );
+              }}
+            </Droppable>
+          </Container>
+        );
+      }}
+    </Draggable>
   );
 }

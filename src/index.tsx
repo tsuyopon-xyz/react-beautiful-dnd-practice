@@ -5,6 +5,8 @@ import {
   DropResult,
   DragStart,
   DragUpdate,
+  Droppable,
+  DroppableProvided,
 } from 'react-beautiful-dnd';
 import initialData from './initial-data';
 import Column from './Column';
@@ -19,7 +21,7 @@ const App = () => {
   const [homeIndex, setHomeIndex] = useState<number>(0);
 
   const onDragStart = (start: DragStart) => {
-    console.log(start, 'Drag Start!!!');
+    // console.log(start, 'Drag Start!!!');
     const homeIndex = data.columnOrder.indexOf(start.source.droppableId);
     setHomeIndex(homeIndex);
 
@@ -37,12 +39,10 @@ const App = () => {
   };
 
   const onDragEnd = (result: DropResult) => {
-    // setHomeIndex(null);
-
     // document.body.style.color = 'inherit';
     // document.body.style.backgroundColor = 'inherit';
 
-    const { /*draggableId,*/ destination, source } = result;
+    const { /*draggableId,*/ destination, source, type } = result;
 
     if (!destination) {
       return;
@@ -55,42 +55,62 @@ const App = () => {
       return;
     }
 
-    const srcColumnId = source.droppableId;
-    const destColumnId = destination.droppableId;
+    if (type === 'task') {
+      const srcColumnId = source.droppableId;
+      const destColumnId = destination.droppableId;
 
-    if (srcColumnId === destColumnId) {
+      if (srcColumnId === destColumnId) {
+        const srcColumn = data.columns[srcColumnId];
+        const newTaskIds = [...srcColumn.taskIds];
+
+        const pulledTaskId = newTaskIds.splice(source.index, 1)[0];
+        newTaskIds.splice(destination.index, 0, pulledTaskId);
+
+        setData((prevData) => {
+          const updatedData = { ...prevData };
+          data.columns[srcColumnId].taskIds = newTaskIds;
+
+          return updatedData;
+        });
+
+        return;
+      }
+
       const srcColumn = data.columns[srcColumnId];
-      const newTaskIds = [...srcColumn.taskIds];
+      const destColumn = data.columns[destColumnId];
 
-      const pulledTaskId = newTaskIds.splice(source.index, 1)[0];
-      newTaskIds.splice(destination.index, 0, pulledTaskId);
+      const newSrcTaskIds = [...srcColumn.taskIds];
+      const newDestTaskIds = [...destColumn.taskIds];
+
+      const pulledTaskId = newSrcTaskIds.splice(source.index, 1)[0];
+      newDestTaskIds.splice(destination.index, 0, pulledTaskId);
 
       setData((prevData) => {
         const updatedData = { ...prevData };
-        data.columns[srcColumnId].taskIds = newTaskIds;
+        updatedData.columns[srcColumnId].taskIds = newSrcTaskIds;
+        updatedData.columns[destColumnId].taskIds = newDestTaskIds;
 
         return updatedData;
       });
-
       return;
     }
 
-    const srcColumn = data.columns[srcColumnId];
-    const destColumn = data.columns[destColumnId];
+    if (type === 'column') {
+      console.log('Imple column');
 
-    const newSrcTaskIds = [...srcColumn.taskIds];
-    const newDestTaskIds = [...destColumn.taskIds];
+      const newColumnOrder = [...data.columnOrder];
+      const pulledColumnId = newColumnOrder.splice(source.index, 1)[0];
+      newColumnOrder.splice(destination.index, 0, pulledColumnId);
 
-    const pulledTaskId = newSrcTaskIds.splice(source.index, 1)[0];
-    newDestTaskIds.splice(destination.index, 0, pulledTaskId);
+      setData((prevData) => {
+        const updatedData = { ...prevData };
+        updatedData.columnOrder = newColumnOrder;
 
-    setData((prevData) => {
-      const updatedData = { ...prevData };
-      data.columns[srcColumnId].taskIds = newSrcTaskIds;
-      data.columns[destColumnId].taskIds = newDestTaskIds;
+        console.log(updatedData, '@@@@@@');
 
-      return updatedData;
-    });
+        return updatedData;
+      });
+    }
   };
 
   return (
@@ -99,23 +119,33 @@ const App = () => {
       onDragUpdate={onDragUpdate}
       onDragEnd={onDragEnd}
     >
-      <Container>
-        {data.columnOrder.map((columnId, index) => {
-          const column = data.columns[columnId];
-          const tasks = column.taskIds.map((taskId) => data.tasks[taskId]);
-
-          const isDropDisabled = index < homeIndex;
-
+      <Droppable droppableId="all-columns" direction="horizontal" type="column">
+        {(provided: DroppableProvided) => {
           return (
-            <Column
-              key={columnId}
-              column={column}
-              tasks={tasks}
-              isDropDisabled={isDropDisabled}
-            />
+            <Container {...provided.droppableProps} ref={provided.innerRef}>
+              {data.columnOrder.map((columnId, index) => {
+                const column = data.columns[columnId];
+                const tasks = column.taskIds.map(
+                  (taskId) => data.tasks[taskId]
+                );
+
+                const isDropDisabled = index < homeIndex;
+
+                return (
+                  <Column
+                    key={columnId}
+                    column={column}
+                    tasks={tasks}
+                    isDropDisabled={isDropDisabled}
+                    index={index}
+                  />
+                );
+              })}
+              {provided.placeholder}
+            </Container>
           );
-        })}
-      </Container>
+        }}
+      </Droppable>
     </DragDropContext>
   );
 };
