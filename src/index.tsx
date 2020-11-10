@@ -8,23 +8,31 @@ const App = () => {
   const [data, setData] = useState(initialData);
 
   const onDragEnd = (result: DropResult) => {
-    console.log(result);
     const { draggableId, destination, source } = result;
 
-    if (destination) {
-      const srcColumnId = source.droppableId;
-      const srcColumn = data.columns[srcColumnId];
-      const copiedTaskIds = [...srcColumn.taskIds];
-      const pulledTaskId = copiedTaskIds.splice(source.index, 1)[0];
-      copiedTaskIds.splice(destination.index, 0, pulledTaskId);
-
-      setData((prevData) => {
-        const updatedData = { ...prevData };
-        data.columns[srcColumnId].taskIds = copiedTaskIds;
-
-        return updatedData;
-      });
+    if (!destination) {
+      return;
     }
+
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return;
+    }
+
+    const srcColumnId = source.droppableId;
+    const srcColumn = data.columns[srcColumnId];
+    const copiedTaskIds = [...srcColumn.taskIds];
+    const pulledTaskId = copiedTaskIds.splice(source.index, 1)[0];
+    copiedTaskIds.splice(destination.index, 0, pulledTaskId);
+
+    setData((prevData) => {
+      const updatedData = { ...prevData };
+      data.columns[srcColumnId].taskIds = copiedTaskIds;
+
+      return updatedData;
+    });
   };
 
   return (
