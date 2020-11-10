@@ -14,6 +14,16 @@ const Container = styled.div`
   margin-bottom: 8px;
   background-color: ${(props: any) =>
     props.isDragging ? 'lightgreen' : 'white'};
+
+  display: flex;
+`;
+
+const Handle = styled.div`
+  width: 20px;
+  height: 20px;
+  background-color: orange;
+  border-radius: 4px;
+  margin: 8px;
 `;
 
 interface IProps {
@@ -30,10 +40,10 @@ export default function Column({ task, index }: IProps) {
           <Container
             ref={provided.innerRef}
             {...provided.draggableProps}
-            {...provided.dragHandleProps}
             //@ts-ignore
             isDragging={isDragging}
           >
+            <Handle {...provided.dragHandleProps} />
             {task.content}
           </Container>
         );
