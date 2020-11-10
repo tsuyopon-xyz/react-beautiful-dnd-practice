@@ -35,7 +35,6 @@ export default function Column({ column, tasks }: IProps) {
       <Droppable droppableId={column.id}>
         {(provided: DroppableProvided, snapShot: DroppableStateSnapshot) => {
           const { isDraggingOver } = snapShot;
-          console.log(isDraggingOver);
 
           return (
             <TaskList
