@@ -1,7 +1,11 @@
 import React from 'react';
 import Task from './Task';
 import { Column as ColumnType, Task as TaskType } from './Types';
-import { Droppable, DroppableProvided } from 'react-beautiful-dnd';
+import {
+  Droppable,
+  DroppableProvided,
+  DroppableStateSnapshot,
+} from 'react-beautiful-dnd';
 import styled from 'styled-components';
 
 const Container = styled.div`
@@ -14,6 +18,9 @@ const Title = styled.div`
 `;
 const TaskList = styled.div`
   padding: 8px;
+  transition: background-color 0.2s ease;
+  background-color: ${(props: any) =>
+    props.isDraggingOver ? 'skyblue' : 'white'};
 `;
 
 interface IProps {
@@ -26,14 +33,24 @@ export default function Column({ column, tasks }: IProps) {
     <Container>
       <Title>{column.title}</Title>
       <Droppable droppableId={column.id}>
-        {(provided: DroppableProvided) => (
-          <TaskList ref={provided.innerRef} {...provided.droppableProps}>
-            {tasks.map((task, index) => (
-              <Task key={task.id} task={task} index={index} />
-            ))}
-            {provided.placeholder}
-          </TaskList>
-        )}
+        {(provided: DroppableProvided, snapShot: DroppableStateSnapshot) => {
+          const { isDraggingOver } = snapShot;
+          console.log(isDraggingOver);
+
+          return (
+            <TaskList
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              //@ts-ignore
+              isDraggingOver={isDraggingOver}
+            >
+              {tasks.map((task, index) => (
+                <Task key={task.id} task={task} index={index} />
+              ))}
+              {provided.placeholder}
+            </TaskList>
+          );
+        }}
       </Droppable>
     </Container>
   );

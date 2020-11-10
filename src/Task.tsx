@@ -1,14 +1,19 @@
 import React from 'react';
 import { Task } from './Types';
 import styled from 'styled-components';
-import { Draggable, DraggableProvided } from 'react-beautiful-dnd';
+import {
+  Draggable,
+  DraggableProvided,
+  DraggableStateSnapshot,
+} from 'react-beautiful-dnd';
 
 const Container = styled.div`
   border: 1px solid lightgrey;
   border-radius: 2px;
   padding: 8px;
   margin-bottom: 8px;
-  background-color: white;
+  background-color: ${(props: any) =>
+    props.isDragging ? 'lightgreen' : 'white'};
 `;
 
 interface IProps {
@@ -19,15 +24,20 @@ interface IProps {
 export default function Column({ task, index }: IProps) {
   return (
     <Draggable draggableId={task.id} index={index}>
-      {(provided: DraggableProvided) => (
-        <Container
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
-        >
-          {task.content}
-        </Container>
-      )}
+      {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => {
+        const { isDragging } = snapshot;
+        return (
+          <Container
+            ref={provided.innerRef}
+            {...provided.draggableProps}
+            {...provided.dragHandleProps}
+            //@ts-ignore
+            isDragging={isDragging}
+          >
+            {task.content}
+          </Container>
+        );
+      }}
     </Draggable>
   );
 }
