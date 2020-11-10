@@ -1,6 +1,7 @@
 import React from 'react';
 import Task from './Task';
 import { Column as ColumnType, Task as TaskType } from './Types';
+import { Droppable, DroppableProvided } from 'react-beautiful-dnd';
 import styled from 'styled-components';
 
 const Container = styled.div`
@@ -24,11 +25,16 @@ export default function Column({ column, tasks }: IProps) {
   return (
     <Container>
       <Title>{column.title}</Title>
-      <TaskList>
-        {tasks.map((task) => (
-          <Task key={task.id} task={task} />
-        ))}
-      </TaskList>
+      <Droppable droppableId={column.id}>
+        {(provided: DroppableProvided) => (
+          <TaskList ref={provided.innerRef} {...provided.droppableProps}>
+            {tasks.map((task, index) => (
+              <Task key={task.id} task={task} index={index} />
+            ))}
+            {provided.placeholder}
+          </TaskList>
+        )}
+      </Droppable>
     </Container>
   );
 }
