@@ -42,6 +42,17 @@ interface IProps {
   index: number;
 }
 
+const InnerList = React.memo(({ tasks }: { tasks: TaskType[] }) => {
+  return (
+    <>
+      {tasks.map((task, index) => {
+        // console.log('render task index : ', index);
+        return <Task key={task.id} task={task} index={index} />;
+      })}
+    </>
+  );
+});
+
 export default function Column({
   column,
   tasks,
@@ -75,9 +86,7 @@ export default function Column({
                     //@ts-ignore
                     isDraggingOver={isDraggingOver}
                   >
-                    {tasks.map((task, index) => (
-                      <Task key={task.id} task={task} index={index} />
-                    ))}
+                    <InnerList tasks={tasks} />
                     {provided.placeholder}
                   </TaskList>
                 );

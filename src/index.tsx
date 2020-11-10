@@ -18,13 +18,12 @@ const Container = styled.div`
 
 const App = () => {
   const [data, setData] = useState(initialData);
-  const [homeIndex, setHomeIndex] = useState<number>(0);
+  // const [homeIndex, setHomeIndex] = useState<number>(0);
 
   const onDragStart = (start: DragStart) => {
     // console.log(start, 'Drag Start!!!');
-    const homeIndex = data.columnOrder.indexOf(start.source.droppableId);
-    setHomeIndex(homeIndex);
-
+    // const homeIndex = data.columnOrder.indexOf(start.source.droppableId);
+    // setHomeIndex(homeIndex);
     // document.body.style.color = 'orange';
     // document.body.style.transition = 'background-color 0.2s ease';
   };
@@ -96,8 +95,6 @@ const App = () => {
     }
 
     if (type === 'column') {
-      console.log('Imple column');
-
       const newColumnOrder = [...data.columnOrder];
       const pulledColumnId = newColumnOrder.splice(source.index, 1)[0];
       newColumnOrder.splice(destination.index, 0, pulledColumnId);
@@ -113,6 +110,29 @@ const App = () => {
     }
   };
 
+  const InnerList = React.memo(() => {
+    const list = data.columnOrder.map((columnId, index) => {
+      // console.log('render column index : ', index);
+
+      const column = data.columns[columnId];
+      const tasks = column.taskIds.map((taskId) => data.tasks[taskId]);
+
+      // const isDropDisabled = index < homeIndex;
+
+      return (
+        <Column
+          key={columnId}
+          column={column}
+          tasks={tasks}
+          isDropDisabled={false}
+          index={index}
+        />
+      );
+    });
+
+    return <>{list}</>;
+  });
+
   return (
     <DragDropContext
       onDragStart={onDragStart}
@@ -123,24 +143,7 @@ const App = () => {
         {(provided: DroppableProvided) => {
           return (
             <Container {...provided.droppableProps} ref={provided.innerRef}>
-              {data.columnOrder.map((columnId, index) => {
-                const column = data.columns[columnId];
-                const tasks = column.taskIds.map(
-                  (taskId) => data.tasks[taskId]
-                );
-
-                const isDropDisabled = index < homeIndex;
-
-                return (
-                  <Column
-                    key={columnId}
-                    column={column}
-                    tasks={tasks}
-                    isDropDisabled={isDropDisabled}
-                    index={index}
-                  />
-                );
-              })}
+              <InnerList />
               {provided.placeholder}
             </Container>
           );
