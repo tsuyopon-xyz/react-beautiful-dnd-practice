@@ -32,13 +32,18 @@ const TaskList = styled.div`
 interface IProps {
   column: ColumnType;
   tasks: TaskType[];
+  isDropDisabled: boolean;
 }
 
-export default function Column({ column, tasks }: IProps) {
+export default function Column({ column, tasks, isDropDisabled }: IProps) {
   return (
     <Container>
       <Title>{column.title}</Title>
-      <Droppable droppableId={column.id}>
+      <Droppable
+        droppableId={column.id}
+        // type={column.id === 'column-3' ? 'done' : 'active'}
+        isDropDisabled={isDropDisabled}
+      >
         {(provided: DroppableProvided, snapShot: DroppableStateSnapshot) => {
           const { isDraggingOver } = snapShot;
 

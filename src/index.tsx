@@ -16,9 +16,13 @@ const Container = styled.div`
 
 const App = () => {
   const [data, setData] = useState(initialData);
+  const [homeIndex, setHomeIndex] = useState<number>(0);
 
-  const onDragStart = (initial: DragStart) => {
-    console.log(initial, 'Drag Start!!!');
+  const onDragStart = (start: DragStart) => {
+    console.log(start, 'Drag Start!!!');
+    const homeIndex = data.columnOrder.indexOf(start.source.droppableId);
+    setHomeIndex(homeIndex);
+
     // document.body.style.color = 'orange';
     // document.body.style.transition = 'background-color 0.2s ease';
   };
@@ -33,10 +37,12 @@ const App = () => {
   };
 
   const onDragEnd = (result: DropResult) => {
-    document.body.style.color = 'inherit';
-    document.body.style.backgroundColor = 'inherit';
+    // setHomeIndex(null);
 
-    const { draggableId, destination, source } = result;
+    // document.body.style.color = 'inherit';
+    // document.body.style.backgroundColor = 'inherit';
+
+    const { /*draggableId,*/ destination, source } = result;
 
     if (!destination) {
       return;
@@ -94,11 +100,20 @@ const App = () => {
       onDragEnd={onDragEnd}
     >
       <Container>
-        {data.columnOrder.map((columnId) => {
+        {data.columnOrder.map((columnId, index) => {
           const column = data.columns[columnId];
           const tasks = column.taskIds.map((taskId) => data.tasks[taskId]);
 
-          return <Column key={columnId} column={column} tasks={tasks} />;
+          const isDropDisabled = index < homeIndex;
+
+          return (
+            <Column
+              key={columnId}
+              column={column}
+              tasks={tasks}
+              isDropDisabled={isDropDisabled}
+            />
+          );
         })}
       </Container>
     </DragDropContext>

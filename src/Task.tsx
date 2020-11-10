@@ -13,7 +13,11 @@ const Container = styled.div`
   padding: 8px;
   margin-bottom: 8px;
   background-color: ${(props: any) =>
-    props.isDragging ? 'lightgreen' : 'white'};
+    props.isDragDisabled
+      ? 'lightgrey'
+      : props.isDragging
+      ? 'lightgreen'
+      : 'white'};
 
   display: flex;
 `;
@@ -24,8 +28,14 @@ interface IProps {
 }
 
 export default function Column({ task, index }: IProps) {
+  const isDragDisabled = task.id === 'task-1';
+
   return (
-    <Draggable draggableId={task.id} index={index}>
+    <Draggable
+      draggableId={task.id}
+      index={index}
+      isDragDisabled={isDragDisabled}
+    >
       {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => {
         const { isDragging } = snapshot;
         return (
@@ -35,6 +45,7 @@ export default function Column({ task, index }: IProps) {
             {...provided.dragHandleProps}
             //@ts-ignore
             isDragging={isDragging}
+            isDragDisabled={isDragDisabled}
           >
             {task.content}
           </Container>
